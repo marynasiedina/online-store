@@ -1,11 +1,38 @@
-import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { Context } from '../index';
+import { observer } from 'mobx-react-lite';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Card, Container, Form, Row } from 'react-bootstrap';
-import { REGISTRATION_ROUTE, LOGIN_ROUTE } from '../utils/consts';
+import { REGISTRATION_ROUTE, SHOP_ROUTE, LOGIN_ROUTE } from '../utils/consts';
+import { registration, login } from '../http/userApi';
 
-function Auth() {
+
+const Auth = observer(() => {
+  const { user } = useContext(Context);
   const location = useLocation();
+  const navigate = useNavigate();
   const isLogin = location.pathname === LOGIN_ROUTE;
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const click = async () => {
+    try {
+      let data;
+      if (isLogin) {
+        data = await login(email, password);
+        user.setUser(data);
+        user.setIsAuth(true);
+        navigate(SHOP_ROUTE);
+      }
+      else {
+        data = await registration(email, password);
+        navigate(LOGIN_ROUTE);
+      }
+    } catch (error) {
+      alert(error.response.data.message);
+    }
+  };
+
   return (
     <Container
       className='d-flex justify-content-center align-items-center'
@@ -15,10 +42,15 @@ function Auth() {
         <h2 className='m-auto'>{isLogin ? 'Authentication' : 'Registration'}</h2>
         <Form className='d-flex flex-column'>
           <Form.Control
+            value={email}
+            onChange={e => setEmail(e.target.value)}
             className='mt-3'
             placeholder='Type your email'
           />
           <Form.Control
+            type='password'
+            value={password}
+            onChange={e => setPassword(e.target.value)}
             className='mt-3'
             placeholder='Type your password'
           />
@@ -35,12 +67,12 @@ function Auth() {
                   Please sign in here.
                 </NavLink>
               </Row>}
-            <Button variant='outline-success'>{isLogin ? 'Sign in' : 'Register'}</Button>
+            <Button onClick={() => click()} variant='outline-success'>{isLogin ? 'Sign in' : 'Register'}</Button>
           </Row>
         </Form>
       </Card>
     </Container>
   );
-}
+});
 
 export default Auth;

@@ -15,11 +15,10 @@ const Typebar = observer(() => {
           style={{ cursor: 'pointer' }}
           key={type.id}
         >
-          {type.name}
+          {type.name.toUpperCase()}
         </ListGroup.Item>)}
     </ListGroup>
   );
 });
 
 export default Typebar;
-
